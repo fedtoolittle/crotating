@@ -20,22 +20,21 @@ namespace Crotating.Services
             columnName + " is empty at row " + rowIndex);
 
     // Case 1: Excel numeric date
-    if (cellValue is double)
+    if (cellValue is double d)
     {
-        return DateTime.FromOADate((double)cellValue);
+        return DateTime.FromOADate(d);
     }
 
     // Case 2: String date
     var text = cellValue.ToString().Trim();
 
-    DateTime dt;
-    if (DateTime.TryParse(text, out dt))
-    {
-        return dt;
-    }
+            if (DateTime.TryParse(text, out DateTime dt))
+            {
+                return dt;
+            }
 
-    // Case 3: Exact format fallback
-    if (DateTime.TryParseExact(
+            // Case 3: Exact format fallback
+            if (DateTime.TryParseExact(
         text,
         "yyyy-MM-dd HH:mm",
         System.Globalization.CultureInfo.InvariantCulture,
@@ -71,6 +70,10 @@ namespace Crotating.Services
                         continue;
                     }
 
+                    var name = row.Cell(1).GetString().Trim();
+                    if (string.IsNullOrEmpty(name))
+                        continue;
+
                     try
                     {
                         var entry = ParseRow(row);
@@ -98,16 +101,12 @@ namespace Crotating.Services
             if (string.IsNullOrEmpty(name))
                 throw new InvalidDataException("Name is missing.");
 
-            DateTime startTime;
-            DateTime endTime;
-            decimal hoursWorked;
-
             if (!DateTime.TryParseExact(
                     startRaw,
                     "yyyy-MM-dd HH:mm",
                     CultureInfo.InvariantCulture,
                     DateTimeStyles.None,
-                    out startTime))
+                    out DateTime startTime))
                 throw new InvalidDataException("Invalid start time format.");
 
             if (!DateTime.TryParseExact(
@@ -115,14 +114,14 @@ namespace Crotating.Services
                     "yyyy-MM-dd HH:mm",
                     CultureInfo.InvariantCulture,
                     DateTimeStyles.None,
-                    out endTime))
+                    out DateTime endTime))
                 throw new InvalidDataException("Invalid end time format.");
 
             if (!decimal.TryParse(
                     hoursRaw,
                     NumberStyles.Any,
                     CultureInfo.InvariantCulture,
-                    out hoursWorked))
+                    out decimal hoursWorked))
                 throw new InvalidDataException("Invalid hours worked.");
 
             if (endTime < startTime)

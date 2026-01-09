@@ -95,6 +95,7 @@
     <Compile Include="Models\DailyHours.cs" />
     <Compile Include="Models\DailySummary.cs" />
     <Compile Include="Models\WorkEntry.cs" />
+    <Compile Include="Processing\WorkSummaryService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\ExcelReader.cs" />
@@ -125,8 +126,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Processing\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
