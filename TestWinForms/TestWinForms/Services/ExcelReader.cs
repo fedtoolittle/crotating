@@ -90,50 +90,5 @@ namespace Crotating.Services
 
             return results;
         }
-
-        private WorkEntry ParseRow(IXLRow row)
-        {
-            var name = row.Cell(1).GetString().Trim();
-            var startRaw = row.Cell(3).GetString();
-            var endRaw = row.Cell(4).GetString();
-            var hoursRaw = row.Cell(6).GetString();
-
-            if (string.IsNullOrEmpty(name))
-                throw new InvalidDataException("Name is missing.");
-
-            if (!DateTime.TryParseExact(
-                    startRaw,
-                    "yyyy-MM-dd HH:mm",
-                    CultureInfo.InvariantCulture,
-                    DateTimeStyles.None,
-                    out DateTime startTime))
-                throw new InvalidDataException("Invalid start time format.");
-
-            if (!DateTime.TryParseExact(
-                    endRaw,
-                    "yyyy-MM-dd HH:mm",
-                    CultureInfo.InvariantCulture,
-                    DateTimeStyles.None,
-                    out DateTime endTime))
-                throw new InvalidDataException("Invalid end time format.");
-
-            if (!decimal.TryParse(
-                    hoursRaw,
-                    NumberStyles.Any,
-                    CultureInfo.InvariantCulture,
-                    out decimal hoursWorked))
-                throw new InvalidDataException("Invalid hours worked.");
-
-            if (endTime < startTime)
-                throw new InvalidDataException("End time is before start time.");
-
-            return new WorkEntry
-            {
-                Name = name,
-                StartTime = startTime,
-                EndTime = endTime,
-                HoursWorked = hoursWorked
-            };
-        }
     }
 }
