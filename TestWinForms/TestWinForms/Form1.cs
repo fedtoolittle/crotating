@@ -1,4 +1,5 @@
 ﻿using Crotating.Services;
+using Crotating.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,12 +14,46 @@ namespace Crotating
 {
     public partial class Form1 : Form
     {
+        private List<WorkEntry> _loadedEntries;
+
         public Form1()
         {
+
             InitializeComponent();
             
         }
 
+        private void btnExport_Click(object sender, EventArgs e)
+        {
+            if (_loadedEntries == null || _loadedEntries.Count == 0)
+            {
+                MessageBox.Show(
+                    "No data available to export.",
+                    "Export Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            using (var dialog = new SaveFileDialog())
+            {
+                dialog.Filter = "Excel Files (*.xlsx)|*.xlsx";
+                dialog.Title = "Save exported summary";
+                dialog.FileName = "WorkSummary.xlsx";
+
+                if (dialog.ShowDialog() != DialogResult.OK)
+                    return;
+
+                var exporter = new ExcelExporter();
+                exporter.ExportSummary(_loadedEntries, dialog.FileName);
+
+                MessageBox.Show(
+                    "Export completed successfully.",
+                    "Export",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+        }
 
         private void btnBrowseSource_Click(object sender, EventArgs e)
         {
@@ -84,10 +119,10 @@ namespace Crotating
             try
             {
                 var reader = new ExcelReader();
-                var entries = reader.ReadEntries(txtSourceFile.Text);
+                _loadedEntries = reader.ReadEntries(txtSourceFile.Text);
 
                 var aggregator = new WorkAggregator();
-                var summaries = aggregator.AggregateByPersonAndDay(entries);
+                var summaries = aggregator.AggregateByPersonAndDay(_loadedEntries);
 
                 var service = new WorkSummaryService();
                 var table = service.BuildExportTable(summaries);
@@ -98,7 +133,11 @@ namespace Crotating
                 //        s.Name +   " | " + s.Date.ToShortDateString() + " | " + s.TotalHours + " hours");
                 //}
 
-                lblStatus.Text = "Loaded " + entries.Count + " rows successfully.";
+                
+
+                lblStatus.Text = "Loaded " + _loadedEntries.Count + " rows successfully.";
+                btnExport.Enabled = true;
+
             }
             catch (Exception ex)
             {
