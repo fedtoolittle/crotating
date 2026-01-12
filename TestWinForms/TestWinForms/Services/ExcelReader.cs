@@ -36,6 +36,14 @@ namespace Crotating.Services
                     object durationCell = worksheet.Cells[row, 3].Value;
                     object hoursCell = worksheet.Cells[row, 4].Value;
 
+                    // ---- Skip TOTAL rows ----
+                    if (dateCell != null &&
+                        dateCell.ToString().Trim().Equals("Total", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+
                     // ---- Name (carry-forward) ----
                     if (nameCell != null && !string.IsNullOrWhiteSpace(nameCell.ToString()))
                     {
@@ -84,16 +92,49 @@ namespace Crotating.Services
                     if (durationCell == null)
                         throw new InvalidDataException("Duration is empty at row " + row);
 
+                    //Diagnostic for TimeSpan duration
+                    var rawValue = durationCell;
+                    var rawType = rawValue == null ? "null" : rawValue.GetType().FullName;
+
+                    System.Diagnostics.Debug.WriteLine(
+                        "Row " + row +
+                        " | Duration raw value = [" + rawValue + "]" +
+                        " | Type = " + rawType);
+
                     TimeSpan duration;
-                    if (!TimeSpan.TryParseExact(
-                        durationCell.ToString().Trim(),
-                        @"hh\:mm\:ss",
-                        CultureInfo.InvariantCulture,
-                        out duration))
+
+                    // Case 1: Excel numeric duration (fraction of a day)
+                    if (durationCell is double)
                     {
-                        throw new InvalidDataException(
-                            "Invalid duration format at row " + row +
-                            ": '" + durationCell + "'");
+                        duration = TimeSpan.FromDays((double)durationCell);
+                    }
+                    // Case 2: Excel DateTime (time value)
+                    else if (durationCell is DateTime)
+                    {
+                        duration = ((DateTime)durationCell).TimeOfDay;
+                    }
+                    // Case 3: Text duration (HH:MM:SS, can exceed 24)
+                    else
+                    {
+                        var text = durationCell.ToString().Trim();
+                        var parts = text.Split(':');
+
+                        if (parts.Length != 3)
+                            throw new InvalidDataException(
+                                "Invalid duration format at row " + row + ": '" + text + "'");
+
+                        int durHours, durMinutes, durSeconds;
+
+                        if (!int.TryParse(parts[0], out durHours) ||
+                            !int.TryParse(parts[1], out durMinutes) ||
+                            !int.TryParse(parts[2], out durSeconds))
+                        {
+                            throw new InvalidDataException(
+                                "Invalid duration format at row " + row + ": '" + text + "'");
+                        }
+
+                        duration = new TimeSpan(durHours, durMinutes, durSeconds);
+
                     }
 
                     // ---- Hours (decimal) ----

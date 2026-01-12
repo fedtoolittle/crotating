@@ -33,6 +33,7 @@
             this.btnBrowseSource = new System.Windows.Forms.Button();
             this.btnRun = new System.Windows.Forms.Button();
             this.lblStatus = new System.Windows.Forms.Label();
+            this.btnExport = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // lblSourceFile
@@ -64,7 +65,7 @@
             // btnRun
             // 
             this.btnRun.Enabled = false;
-            this.btnRun.Location = new System.Drawing.Point(630, 401);
+            this.btnRun.Location = new System.Drawing.Point(560, 397);
             this.btnRun.Name = "btnRun";
             this.btnRun.Size = new System.Drawing.Size(75, 23);
             this.btnRun.TabIndex = 3;
@@ -81,11 +82,23 @@
             this.lblStatus.TabIndex = 4;
             this.lblStatus.Text = "Ready///?";
             // 
+            // btnExport
+            // 
+            this.btnExport.Enabled = false;
+            this.btnExport.Location = new System.Drawing.Point(641, 397);
+            this.btnExport.Name = "btnExport";
+            this.btnExport.Size = new System.Drawing.Size(75, 23);
+            this.btnExport.TabIndex = 5;
+            this.btnExport.Text = "Export";
+            this.btnExport.UseVisualStyleBackColor = true;
+            this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.btnExport);
             this.Controls.Add(this.lblStatus);
             this.Controls.Add(this.btnRun);
             this.Controls.Add(this.btnBrowseSource);
@@ -106,6 +119,7 @@
         private System.Windows.Forms.Button btnBrowseSource;
         private System.Windows.Forms.Button btnRun;
         private System.Windows.Forms.Label lblStatus;
+        private System.Windows.Forms.Button btnExport;
     }
 }
 
