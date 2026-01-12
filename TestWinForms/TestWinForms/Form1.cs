@@ -1,10 +1,11 @@
-﻿using Crotating.Services;
-using Crotating.Models;
+﻿using Crotating.Models;
+using Crotating.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,7 +21,10 @@ namespace Crotating
         {
 
             InitializeComponent();
-            
+            cmbInputFormat.Items.Add("Crabal Time SHEET");
+            cmbInputFormat.Items.Add("Crabal Time CARD");
+            cmbInputFormat.SelectedIndex = 0;
+
         }
 
         private void btnExport_Click(object sender, EventArgs e)
@@ -74,14 +78,17 @@ namespace Crotating
         private void UpdateUiState()
         {
             bool hasSourceFile =
-                !string.IsNullOrWhiteSpace(txtSourceFile.Text) &&
-                System.IO.File.Exists(txtSourceFile.Text);
+        !string.IsNullOrWhiteSpace(txtSourceFile.Text) &&
+        System.IO.File.Exists(txtSourceFile.Text);
 
-            btnRun.Enabled = hasSourceFile;
+            bool hasFormat =
+                cmbInputFormat.SelectedIndex >= 0;
 
-            lblStatus.Text = hasSourceFile
+            btnRun.Enabled = hasSourceFile && hasFormat;
+
+            lblStatus.Text = btnRun.Enabled
                 ? "Ready to process."
-                : "Please select a source Excel file.";
+                : "Please select a source file and format.";
         }
 
         //private void btnRun_Click(object sender, EventArgs e)
@@ -118,7 +125,22 @@ namespace Crotating
         {
             try
             {
-                var reader = new ExcelReader();
+                IWorkEntryReader reader;
+
+                switch (cmbInputFormat.SelectedIndex)
+                {
+                    case 0:
+                        reader = new CrabalTimesheetReader();
+                        break;
+
+                    case 1:
+                        reader = new CrabalTimecardReader();
+                        break;
+
+                    default:
+                        throw new InvalidOperationException("Invalid input format selected.");
+                }
+
                 _loadedEntries = reader.ReadEntries(txtSourceFile.Text);
 
                 var aggregator = new WorkAggregator();
@@ -133,24 +155,36 @@ namespace Crotating
                 //        s.Name +   " | " + s.Date.ToShortDateString() + " | " + s.TotalHours + " hours");
                 //}
 
-                
+
 
                 lblStatus.Text = "Loaded " + _loadedEntries.Count + " rows successfully.";
                 btnExport.Enabled = true;
 
             }
+            catch (InvalidDataException ex)
+            {
+                MessageBox.Show(
+                    "The selected file does not match the chosen format.\n\n" +
+                    ex.Message,
+                    "Invalid File Format",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    ex.Message,
-                    "Processing Error",
+                    "An unexpected error occurred.\n\n" + ex.Message,
+                    "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
-
-                lblStatus.Text = "Processing failed.";
             }
         }
         private void Form1_Load(object sender, EventArgs e)
+        {
+            UpdateUiState();
+        }
+
+        private void cmbInputFormat_SelectedIndexChanged(object sender, EventArgs e)
         {
             UpdateUiState();
         }
