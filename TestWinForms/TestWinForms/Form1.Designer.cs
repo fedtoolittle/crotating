@@ -34,6 +34,8 @@
             this.btnRun = new System.Windows.Forms.Button();
             this.lblStatus = new System.Windows.Forms.Label();
             this.btnExport = new System.Windows.Forms.Button();
+            this.cmbInputFormat = new System.Windows.Forms.ComboBox();
+            this.lblFormatType = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // lblSourceFile
@@ -93,11 +95,32 @@
             this.btnExport.UseVisualStyleBackColor = true;
             this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
             // 
+            // cmbInputFormat
+            // 
+            this.cmbInputFormat.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbInputFormat.FormattingEnabled = true;
+            this.cmbInputFormat.Location = new System.Drawing.Point(204, 114);
+            this.cmbInputFormat.Name = "cmbInputFormat";
+            this.cmbInputFormat.Size = new System.Drawing.Size(121, 23);
+            this.cmbInputFormat.TabIndex = 6;
+            this.cmbInputFormat.SelectedIndexChanged += new System.EventHandler(this.cmbInputFormat_SelectedIndexChanged);
+            // 
+            // lblFormatType
+            // 
+            this.lblFormatType.AutoSize = true;
+            this.lblFormatType.Location = new System.Drawing.Point(76, 122);
+            this.lblFormatType.Name = "lblFormatType";
+            this.lblFormatType.Size = new System.Drawing.Size(90, 15);
+            this.lblFormatType.TabIndex = 7;
+            this.lblFormatType.Text = "Format Type:";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.lblFormatType);
+            this.Controls.Add(this.cmbInputFormat);
             this.Controls.Add(this.btnExport);
             this.Controls.Add(this.lblStatus);
             this.Controls.Add(this.btnRun);
@@ -120,6 +143,8 @@
         private System.Windows.Forms.Button btnRun;
         private System.Windows.Forms.Label lblStatus;
         private System.Windows.Forms.Button btnExport;
+        private System.Windows.Forms.ComboBox cmbInputFormat;
+        private System.Windows.Forms.Label lblFormatType;
     }
 }
 
