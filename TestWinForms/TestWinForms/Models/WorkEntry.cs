@@ -8,9 +8,8 @@ namespace Crotating.Models
 {
     public class WorkEntry
     {
-        public string Name { get; set; } = string.Empty;
-        public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
-        public decimal HoursWorked { get; set; }
+        public string Name { get; set; }
+        public DateTime Date { get; set; }
+        public double Hours { get; set; }
     }
-}   
+}

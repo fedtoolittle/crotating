@@ -10,6 +10,7 @@ namespace Crotating.Models
     {
         public string Name { get; set; }
         public DateTime Date { get; set; }
-        public decimal TotalHours { get; set; }
+        public double TotalHours { get; set; }
     }
+
 }

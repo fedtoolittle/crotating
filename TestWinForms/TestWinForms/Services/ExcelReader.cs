@@ -1,90 +1,123 @@
-﻿using ClosedXML.Excel;
+﻿using Crotating.Models;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Crotating.Models;
 
 namespace Crotating.Services
 {
     public class ExcelReader
     {
-
-        private static DateTime ParseExcelDate(object cellValue, int rowIndex, string columnName)
-{
-    if (cellValue == null)
-        throw new InvalidDataException(
-            columnName + " is empty at row " + rowIndex);
-
-    // Case 1: Excel numeric date
-    if (cellValue is double d)
-    {
-        return DateTime.FromOADate(d);
-    }
-
-    // Case 2: String date
-    var text = cellValue.ToString().Trim();
-
-            if (DateTime.TryParse(text, out DateTime dt))
-            {
-                return dt;
-            }
-
-            // Case 3: Exact format fallback
-            if (DateTime.TryParseExact(
-        text,
-        "yyyy-MM-dd HH:mm",
-        System.Globalization.CultureInfo.InvariantCulture,
-        System.Globalization.DateTimeStyles.None,
-        out dt))
-    {
-        return dt;
-    }
-
-    throw new InvalidDataException(
-        "Invalid " + columnName + " format at row " + rowIndex + ": '" + text + "'");
-}
-
-        public IList<WorkEntry> ReadWorkEntries(string filePath)
+        public List<WorkEntry> ReadEntries(string filePath)
         {
-            if (string.IsNullOrWhiteSpace(filePath))
-                throw new ArgumentException("File path is empty.");
+            if (!File.Exists(filePath))
+                throw new FileNotFoundException("Excel file not found.", filePath);
 
             var results = new List<WorkEntry>();
 
-            using (var workbook = new XLWorkbook(filePath))
+            // Set the license using the new EPPlus 8+ API
+            OfficeOpenXml.ExcelPackage.License.SetNonCommercialPersonal("Your Name or Organization");
+
+            using (var package = new ExcelPackage(new FileInfo(filePath)))
             {
-                var worksheet = workbook.Worksheet(1);
-                var rows = worksheet.RowsUsed();
+                var worksheet = package.Workbook.Worksheets[0];
+                if (worksheet == null)
+                    throw new InvalidDataException("No worksheet found in Excel file.");
 
-                bool isHeader = true;
+                int lastRow = worksheet.Dimension.End.Row;
+                string currentName = null;
 
-                foreach (var row in rows)
+                for (int row = 2; row <= lastRow; row++)
                 {
-                    if (isHeader)
+                    object nameCell = worksheet.Cells[row, 1].Value;
+                    object dateCell = worksheet.Cells[row, 2].Value;
+                    object durationCell = worksheet.Cells[row, 3].Value;
+                    object hoursCell = worksheet.Cells[row, 4].Value;
+
+                    // ---- Name (carry-forward) ----
+                    if (nameCell != null && !string.IsNullOrWhiteSpace(nameCell.ToString()))
                     {
-                        isHeader = false;
-                        continue;
+                        currentName = nameCell.ToString().Trim();
+                        continue; // summary row → do not create WorkEntry
                     }
 
-                    var name = row.Cell(1).GetString().Trim();
-                    if (string.IsNullOrEmpty(name))
-                        continue;
+                    if (currentName == null)
+                    {
+                        throw new InvalidDataException(
+                            "Name missing before data rows (row " + row + ")");
+                    }
 
-                    try
+                    // ---- Date (detail rows only) ----
+                    if (dateCell == null || string.IsNullOrWhiteSpace(dateCell.ToString()))
                     {
-                        var entry = ParseRow(row);
-                        results.Add(entry);
+                        continue; // blank date → summary or spacer row
                     }
-                    catch (Exception ex)
+
+                    DateTime date;
+
+                    // Excel numeric date (most common)
+                    if (dateCell is double)
                     {
-                        throw new InvalidOperationException(
-                            "Error parsing Excel row " + row.RowNumber(),
-                            ex);
+                        date = DateTime.FromOADate((double)dateCell);
                     }
+                    // Already a DateTime
+                    else if (dateCell is DateTime)
+                    {
+                        date = ((DateTime)dateCell);
+                    }
+                    // String fallback (MM/DD/YYYY)
+                    else if (!DateTime.TryParseExact(
+                        dateCell.ToString().Trim(),
+                        "MM/dd/yyyy",
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.None,
+                        out date))
+                    {
+                        throw new InvalidDataException(
+                            "Invalid date format at row " + row +
+                            ": '" + dateCell + "'");
+                    }
+
+                    // ---- Duration (validated but not stored) ----
+                    if (durationCell == null)
+                        throw new InvalidDataException("Duration is empty at row " + row);
+
+                    TimeSpan duration;
+                    if (!TimeSpan.TryParseExact(
+                        durationCell.ToString().Trim(),
+                        @"hh\:mm\:ss",
+                        CultureInfo.InvariantCulture,
+                        out duration))
+                    {
+                        throw new InvalidDataException(
+                            "Invalid duration format at row " + row +
+                            ": '" + durationCell + "'");
+                    }
+
+                    // ---- Hours (decimal) ----
+                    if (hoursCell == null)
+                        throw new InvalidDataException("Hours is empty at row " + row);
+
+                    double hours;
+                    if (!double.TryParse(
+                        hoursCell.ToString().Trim(),
+                        NumberStyles.Any,
+                        CultureInfo.InvariantCulture,
+                        out hours))
+                    {
+                        throw new InvalidDataException(
+                            "Invalid hours value at row " + row +
+                            ": '" + hoursCell + "'");
+                    }
+
+                    results.Add(new WorkEntry
+                    {
+                        Name = currentName,
+                        Date = date.Date,
+                        Hours = hours
+                    });
                 }
             }
 

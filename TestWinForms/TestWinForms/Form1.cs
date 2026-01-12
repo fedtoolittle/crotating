@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Crotating.Services;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -82,11 +83,14 @@ namespace Crotating
         {
             try
             {
-                var reader = new Crotating.Services.ExcelReader();
-                var entries = reader.ReadWorkEntries(txtSourceFile.Text);
+                var reader = new ExcelReader();
+                var entries = reader.ReadEntries(txtSourceFile.Text);
 
-                var aggregator = new Crotating.Services.WorkAggregator();
+                var aggregator = new WorkAggregator();
                 var summaries = aggregator.AggregateByPersonAndDay(entries);
+
+                var service = new WorkSummaryService();
+                var table = service.BuildExportTable(summaries);
 
                 //foreach (var s in summaries)
                 //{

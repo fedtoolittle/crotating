@@ -9,40 +9,18 @@ namespace Crotating.Services
 {
     public class WorkAggregator
     {
-        public IList<DailySummary> AggregateByPersonAndDay(
-            IList<WorkEntry> entries)
+        public List<DailySummary> AggregateByPersonAndDay(
+            List<WorkEntry> entries)
         {
-            var map = new Dictionary<string, Dictionary<DateTime, decimal>>();
-
-            foreach (var entry in entries)
-            {
-                var date = entry.StartTime.Date;
-
-                if (!map.ContainsKey(entry.Name))
-                    map[entry.Name] = new Dictionary<DateTime, decimal>();
-
-                if (!map[entry.Name].ContainsKey(date))
-                    map[entry.Name][date] = 0m;
-
-                map[entry.Name][date] += entry.HoursWorked;
-            }
-
-            var results = new List<DailySummary>();
-
-            foreach (var person in map)
-            {
-                foreach (var day in person.Value)
+            return entries
+                .GroupBy(e => new { e.Name, e.Date })
+                .Select(g => new DailySummary
                 {
-                    results.Add(new DailySummary
-                    {
-                        Name = person.Key,
-                        Date = day.Key,
-                        TotalHours = day.Value
-                    });
-                }
-            }
-
-            return results;
+                    Name = g.Key.Name,
+                    Date = g.Key.Date,
+                    TotalHours = g.Sum(x => x.Hours)
+                })
+                .ToList();
         }
     }
 }
