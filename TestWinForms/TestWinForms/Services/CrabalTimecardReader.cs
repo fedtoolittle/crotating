@@ -1,10 +1,9 @@
-﻿using ClosedXML.Excel;
-using Crotating.Models;
+﻿using Crotating.Models;
+using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 
 namespace Crotating.Services
 {
@@ -15,100 +14,103 @@ namespace Crotating.Services
             if (!File.Exists(filePath))
                 throw new FileNotFoundException("Excel file not found.", filePath);
 
+            ExcelPackage.License.SetNonCommercialPersonal("Crotating");
+
             var results = new List<WorkEntry>();
 
-            using (var workbook = new XLWorkbook(filePath))
+            using var package = new ExcelPackage(new FileInfo(filePath));
+
+            var ws = package.Workbook.Worksheets.Count > 0
+                ? package.Workbook.Worksheets[0]
+                : throw new InvalidDataException("Workbook contains no worksheets.");
+
+            int lastRow = ws.Dimension?.End.Row ?? 0;
+            string currentName = null;
+
+            // Start at row 2 (skip header)
+            for (int row = 2; row <= lastRow; row++)
             {
-                var worksheet = workbook.Worksheet(1);
+                var nameCell = ws.Cells[row, 1].Value;
+                var dateCell = ws.Cells[row, 2].Value;
+                var hoursCell = ws.Cells[row, 4].Value;
 
-                // Skip header row
-                foreach (var row in worksheet.RowsUsed().Skip(1))
+                // ---- Carry-forward name ----
+                if (!string.IsNullOrWhiteSpace(nameCell?.ToString()))
                 {
-                    try
-                    {
-                        if (row.Cells().Any(c =>
-                         c.GetString().Trim()
-                         .Equals("TOTAL", StringComparison.OrdinalIgnoreCase)))
-                        {
-                            continue;
-                        }
-
-                        var name = row.Cell(1).GetString().Trim();
-                        var startCell = row.Cell(3);
-                        var endCell = row.Cell(4);
-                        var hoursCell = row.Cell(6);
-
-                        if (string.IsNullOrWhiteSpace(name))
-                            throw new InvalidDataException(
-                            "Name is missing at row " + row.RowNumber() +
-                            " | Raw value: [" + row.Cell(1).Value + "]");
-
-
-                        // ---- Infer date ----
-                        DateTime startTime = DateTime.MinValue;
-                        DateTime endTime = DateTime.MinValue;
-
-                        bool hasStart = TryGetDateTime(startCell, out startTime);
-                        bool hasEnd = TryGetDateTime(endCell, out endTime);
-
-                        if (!hasStart && !hasEnd)
-                        {
-                            throw new InvalidDataException(
-                                "Start and End time are both missing or invalid.");
-                        }
-
-                        DateTime date = hasStart
-                            ? startTime.Date
-                            : endTime.Date;
-
-
-                        // ---- Hours ----
-                        double hours;
-                        if (!hoursCell.TryGetValue(out hours))
-                        {
-                            if (!double.TryParse(
-                                hoursCell.GetString(),
-                                NumberStyles.Any,
-                                CultureInfo.InvariantCulture,
-                                out hours))
-                            {
-                                throw new InvalidDataException("Invalid hours value.");
-                            }
-                        }
-
-                        results.Add(new WorkEntry
-                        {
-                            Name = name,
-                            Date = date,
-                            Hours = hours
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new InvalidOperationException(
-                            "Error parsing row " + row.RowNumber(), ex);
-                    }
+                    currentName = nameCell.ToString().Trim();
                 }
+
+                if (string.IsNullOrWhiteSpace(currentName))
+                    continue;
+
+                // ---- Date ----
+                if (!TryGetDate(dateCell, out var date))
+                    continue;
+
+                // ---- Hours ----
+                var hoursValue = ws.Cells[row, 4].Value;
+
+                if (!TryGetDouble(hoursValue, out var hours))
+                    continue;
+
+
+
+                results.Add(new WorkEntry
+                {
+                    Name = currentName,
+                    Date = date,
+                    Hours = hours
+                });
             }
 
             return results;
         }
 
-        private bool TryGetDateTime(IXLCell cell, out DateTime value)
+        private static bool TryGetDate(object value, out DateTime date)
         {
-            value = default;
+            date = default;
 
-            if (cell == null || cell.IsEmpty())
+            if (value == null)
                 return false;
 
-            if (cell.TryGetValue(out value))
+            if (value is DateTime dt)
+            {
+                date = dt.Date;
                 return true;
+            }
 
-            return DateTime.TryParse(
-                cell.GetString(),
+            if (value is double oa)
+            {
+                date = DateTime.FromOADate(oa).Date;
+                return true;
+            }
+
+            return DateTime.TryParseExact(
+                value.ToString().Trim(),
+                "MM/dd/yyyy",
                 CultureInfo.InvariantCulture,
                 DateTimeStyles.None,
-                out value);
+                out date);
+        }
+
+        private static bool TryGetDouble(object value, out double result)
+        {
+            result = 0;
+
+            if (value == null)
+                return false;
+
+            if (value is double d)
+            {
+                result = d;
+                return true;
+            }
+
+            return double.TryParse(
+                value.ToString(),
+                NumberStyles.Any,
+                CultureInfo.InvariantCulture,
+                out result);
         }
     }
 }
