@@ -44,6 +44,8 @@ namespace Crotating.Services
                 if (currentName == null)
                     continue;
 
+                // ---- Hours (0 -> allowed) ----
+                var hours = CellNormalization.GetDoubleOrZero(hoursCell);
 
                 // ---- Infer date (best-effort) ----
                 DateTime date = TryGetDate(startCell, out var d1)
