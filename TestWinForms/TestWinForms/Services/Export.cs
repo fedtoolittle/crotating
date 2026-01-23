@@ -62,7 +62,6 @@ namespace Crotating.Services
                             .Where(e => e.Name == name && e.Date.Date == date)
                             .Sum(e => e.Hours);
 
-                        if (totalHours > 0)
                             ws.Cells[row + 2, col + 2].Value = totalHours;
                     }
                 }
