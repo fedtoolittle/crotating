@@ -48,12 +48,7 @@ namespace Crotating.Services
                     continue;
 
                 // ---- Hours ----
-                var hoursValue = ws.Cells[row, 4].Value;
-
-                if (!TryGetDouble(hoursValue, out var hours))
-                    continue;
-
-
+                var hours = CellNormalization.GetDoubleOrZero(hoursCell);
 
                 results.Add(new WorkEntry
                 {
