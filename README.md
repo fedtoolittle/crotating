@@ -63,7 +63,7 @@ Export the results to a standardized summary file for payroll or project managem
 
 ⚖️ License
 
-This project is licensed under the MIT License - see the `LICENSE` file (pending) for details. Note that the EPPlus library requires a separate license context for commercial use.
+This project is licensed under the MIT License - see the `LICENSE` file for details. Note that the EPPlus library requires a separate license context for commercial use.
 
 
 // More Serious Version
