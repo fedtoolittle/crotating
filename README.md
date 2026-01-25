@@ -78,3 +78,11 @@ To use it simply select the file that Crab al vomited out and select the correct
 If anything breaks then only god knows what went wrong because i can't be bothered to write error messages.
 
 Also it has to be opened from Visual Studio because i am not a developer and screw passing around installer.
+
+Credits:
+
+Me - Code and structure
+
+ChatGPT - Readme section & .NET 10 refactor
+
+Copilot - Very ~un~helpful suggestions and periodically nuking everything
