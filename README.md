@@ -8,7 +8,7 @@ Crotating is a high-performance Windows-based utility designed to automate the i
 🚀 Features
 Asynchronous Excel Ingestion: Rapidly parses large-scale timecard files using the EPPlus engine.
 
-Intelligent Logic: Automatically identifies "TOTAL" rows and handles missing data points without crashing (hopefully).
+Intelligent Logic: Automatically identifies `TOTAL` rows and handles missing data points without crashing (hopefully).
 
 Modern .NET 10 Engine: Utilizes the latest C# features, including Nullable Reference Types for increased runtime stability.
 
@@ -32,22 +32,22 @@ Visual Studio 2026 (or VS Code with the C# Dev Kit)
 Building from Source
 
 Clone the repository:
-
+```
 git clone https://github.com/fedtoolittle/crotating.git
-
+```
 Navigate to the project directory:
-
+```
 cd crotating
-
+```
 Restore dependencies and build:
-
+```
 dotnet build -c Release
-
+```
 🏗 Deployment
 To generate a standalone, single-file executable for distribution:
-
+```
 dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish
-
+```
 📖 Usage
 Launch Crotating.exe.
 
@@ -58,7 +58,7 @@ The system will validate the data structure and generate a summarized work repor
 Export the results to a standardized summary file for payroll or project management.
 
 ⚖️ License
-This project is licensed under the MIT License - see the LICENSE file (pending) for details. Note that the EPPlus library requires a separate license context for commercial use.
+This project is licensed under the MIT License - see the `LICENSE` file (pending) for details. Note that the EPPlus library requires a separate license context for commercial use.
 
 
 // More Serious Version
