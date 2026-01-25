@@ -15,6 +15,7 @@ Modern .NET 10 Engine: Utilizes the latest C# features, including Nullable Refer
 Self-Contained Deployment: Can be compiled into a single executable that runs on Windows without requiring a pre-installed .NET runtime.
 
 🛠 Technical Stack
+
 Language: C# 14.0
 
 Framework: .NET 10.0 (WinForms)
@@ -24,6 +25,7 @@ Excel Engine: EPPlus 7+
 Pattern: Service-Oriented Architecture (IWorkEntryReader)
 
 📦 Installation & Setup
+
 Prerequisites
 Visual Studio 2026 (or VS Code with the C# Dev Kit)
 
@@ -44,11 +46,13 @@ Restore dependencies and build:
 dotnet build -c Release
 ```
 🏗 Deployment
+
 To generate a standalone, single-file executable for distribution:
 ```
 dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish
 ```
 📖 Usage
+
 Launch Crotating.exe.
 
 Select your source timecard Excel file.
@@ -58,6 +62,7 @@ The system will validate the data structure and generate a summarized work repor
 Export the results to a standardized summary file for payroll or project management.
 
 ⚖️ License
+
 This project is licensed under the MIT License - see the `LICENSE` file (pending) for details. Note that the EPPlus library requires a separate license context for commercial use.
 
 
