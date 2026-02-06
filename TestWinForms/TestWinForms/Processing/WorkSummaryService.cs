@@ -30,7 +30,7 @@ namespace Crotating.Services
             {
                 table.Columns.Add(
                     date.ToString("yyyy-MM-dd"),
-                    typeof(double));
+                    typeof(decimal));
             }
 
             // ---- Group by person (row per name) ----

@@ -58,7 +58,7 @@ namespace Crotating.Services
                     {
                         DateTime date = dates[col];
 
-                        double totalHours = entries
+                        decimal totalHours = entries
                             .Where(e => e.Name == name && e.Date.Date == date)
                             .Sum(e => e.Hours);
 
