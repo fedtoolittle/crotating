@@ -45,7 +45,7 @@ namespace Crotating.Services
                     continue;
 
                 // ---- Hours (0 -> allowed) ----
-                var hours = CellNormalization.GetDoubleOrZero(hoursCell);
+                var hours = CellNormalization.GetDecimalOrZero(hoursCell);
 
                 // ---- Infer date (best-effort) ----
                 DateTime date = TryGetDate(startCell, out var d1)
@@ -81,6 +81,11 @@ namespace Crotating.Services
             if (value is double oa)
             {
                 date = DateTime.FromOADate(oa).Date;
+                return true;
+            }
+            if (value is decimal dec)
+            {
+                date = DateTime.FromOADate((double)dec).Date;
                 return true;
             }
 

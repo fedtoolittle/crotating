@@ -48,7 +48,7 @@ namespace Crotating.Services
                     continue;
 
                 // ---- Hours ----
-                var hours = CellNormalization.GetDoubleOrZero(hoursCell);
+                var hours = CellNormalization.GetDecimalOrZero(hoursCell);
 
                 results.Add(new WorkEntry
                 {
@@ -79,6 +79,11 @@ namespace Crotating.Services
                 date = DateTime.FromOADate(oa).Date;
                 return true;
             }
+            if (value is decimal dec)
+            {
+                date = DateTime.FromOADate((double)dec).Date;
+                return true;
+            }
 
             return DateTime.TryParseExact(
                 value.ToString().Trim(),
@@ -88,24 +93,5 @@ namespace Crotating.Services
                 out date);
         }
 
-        private static bool TryGetDouble(object value, out double result)
-        {
-            result = 0;
-
-            if (value == null)
-                return false;
-
-            if (value is double d)
-            {
-                result = d;
-                return true;
-            }
-
-            return double.TryParse(
-                value.ToString(),
-                NumberStyles.Any,
-                CultureInfo.InvariantCulture,
-                out result);
-        }
     }
 }
