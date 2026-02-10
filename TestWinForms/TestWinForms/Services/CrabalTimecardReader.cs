@@ -25,7 +25,18 @@ namespace Crotating.Services
                 : throw new InvalidDataException("Workbook contains no worksheets.");
 
             int lastRow = ws.Dimension?.End.Row ?? 0;
+            int lastColumn = ws.Dimension?.End.Column ?? 0;
             string currentName = null;
+
+            if (lastRow > 0 && lastColumn > 0)
+            {
+                CellPostProcessor.FillBlankCellsWithZero(
+                    ws,
+                    1,
+                    1,
+                    lastRow,
+                    lastColumn);
+            }
 
             // Start at row 2 (skip header)
             for (int row = 2; row <= lastRow; row++)
