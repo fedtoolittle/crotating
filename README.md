@@ -83,6 +83,6 @@ Credits:
 
 Me - Code and structure
 
-ChatGPT - Readme section & .NET 10 refactor
+ChatGPT - Readme section, .NET 10 refactor, double to decimal refactor
 
 Copilot - Very ~un~helpful suggestions and periodically nuking everything
